@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multiple Choice Quiz</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<h1>Multiple Choice Quiz</h1>
+<div id="questions"></div>
+<button onclick="submitAnswers()">Submit</button>
+<div id="result"></div>
+
+<script>
+    $(document).ready(function() {
+        // Fetch questions from backend
+        $.getJSON("/api/questions", function(questions) {
+            // Render questions as multiple choice questions
+            questions.forEach(function(question, index) {
+                let html = "<h3>" + question.question + "</h3>";
+                question.options.forEach(function(option) {
+                    html += '<label><input type="radio" name="answer-' + index + '" value="' + option + '"> ' + option + '</label><br>';
+                });
+                $("#questions").append(html);
+            });
+        });
+    });
+
+    function submitAnswers() {
+        // Get selected answers
+        const answers = [];
+        $("#questions input:checked").each(function() {
+            answers.push($(this).val());
+        });
+
+        // Send answers to backend for checking
+        $.ajax({
+            type: "POST",
+            url: "/api/check-answers",
+            data: JSON.stringify({ questions: this.questions, answers: answers }),
+            contentType: "application/json",
+            success: function(result) {
+                // Display result on page
+                if (result) {
+                    $("#result").text("Congratulations, you passed!");
+                } else {
+                    $("#result").text("Sorry, you failed.");
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>
