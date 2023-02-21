@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Multiple Choice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        label {
+            margin-left: 10px;
+        }
+
+        input[type="radio"] {
+            margin-right: 5px;
+        }
+
+        #submit-answers-button {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1>Multiple Choice</h1>
+
+<div id="question-list"></div>
+
+<button id="submit-answers-button">Submit Answers</button>
+
+<script>
+    // Define the URL for the API that returns the questions
+    const questionsUrl = "/api/questions";
+
+    // Declare the variable to store the questions
+    let questions = [];
+
+    // Fetch the questions from the API and display them on the page
+    fetch(questionsUrl)
+        .then(response => response.json())
+        .then(data => {
+            questions = data;
+
+            const questionList = document.getElementById("question-list");
+
+            questions.forEach((question, index) => {
+                // Create a container for the question and its options
+                const questionContainer = document.createElement("div");
+
+                // Create the question text element
+                const questionText = document.createElement("p");
+                questionText.innerText = `${index + 1}. ${question.question}`;
+
+                // Add the question text to the container
+                questionContainer.appendChild(questionText);
+
+                // Create a radio button for each option
+                question.options.forEach(option => {
+                    const optionRadio = document.createElement("input");
+                    optionRadio.type = "radio";
+                    optionRadio.name = `question-${index}`;
+                    optionRadio.value = option;
+
+                    const optionLabel = document.createElement("label");
+                    optionLabel.innerText = option;
+
+                    const optionContainer = document.createElement("div");
+                    optionContainer.appendChild(optionRadio);
+                    optionContainer.appendChild(optionLabel);
+
+                    questionContainer.appendChild(optionContainer);
+                });
+
+                // Add the question container to the list of questions
+                questionList.appendChild(questionContainer);
+            });
+        });
+
+    // Add a click event listener to the "Submit Answers" button
+    const submitButton = document.getElementById("submit-answers-button");
+    submitButton.addEventListener("click", () => {
+        // Get the selected answer for each question
+        const answers = [];
+
+        const questionContainers = document.querySelectorAll("#question-list > div");
+        questionContainers.forEach((questionContainer, index) => {
+            const selectedOption = questionContainer.querySelector("input:checked");
+            answers.push(selectedOption ? selectedOption.value : null);
+        });
+
+        // Send the answers to the server to check them
+        fetch("/api/check-answers", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                questions: questions,
+                answers: answers
+            })
+        })
+            .then(response => response.json())
+            .then(results => {
+                // Display the result for each question
+                results.forEach((result, index) => {
+                    const message = result.correct ? "Correct!" : `Incorrect.`;
+                    const questionContainer = questionContainers[index];
+                    const resultMessage = document.createElement("p");
+                    resultMessage.innerText = message;
+                    questionContainer.appendChild(resultMessage);
+                });
+
+                // Calculate the overall score and display a message
+                const score = results.filter(result => result.correct).length;
+                const message = score === questions.length ? "You got all the answers right!" : `You got ${score} out of ${questions.length} questions right.`;
+                alert(message);
+            });
+    });
+
+</script>
+</body>
+</html>

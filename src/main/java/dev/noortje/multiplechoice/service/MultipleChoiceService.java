@@ -1,8 +1,6 @@
 package dev.noortje.multiplechoice.service;
 
-import dev.noortje.multiplechoice.model.ApiResponse;
-import dev.noortje.multiplechoice.model.ApiResult;
-import dev.noortje.multiplechoice.model.Question;
+import dev.noortje.multiplechoice.model.*;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
@@ -43,21 +41,22 @@ public class MultipleChoiceService {
         return questions;
     }
 
-    public boolean checkAnswers(List<Question> questions, List<String> answers) {
+    public List<AnswerResult> checkAnswers(List<Question> questions, List<String> answers) {
         if (questions.size() != answers.size()) {
             throw new IllegalArgumentException("Number of questions and answers do not match");
         }
 
+        List<AnswerResult> answerResults = new ArrayList<>();
+
         for (int i = 0; i < questions.size(); i++) {
             Question question = questions.get(i);
-            String answer = answers.get(i);
-
-            if (!answer.equals(question.getAnswer())) {
-                return false;
-            }
+            String selectedAnswer = answers.get(i);
+            boolean correct = selectedAnswer.equals(question.getAnswer());
+            AnswerResult answerResult = new AnswerResult(question.getQuestion(), selectedAnswer, correct);
+            answerResults.add(answerResult);
         }
 
-        return true;
+        return answerResults;
     }
-}
 
+}
