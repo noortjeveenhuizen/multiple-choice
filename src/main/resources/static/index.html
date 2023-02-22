@@ -33,10 +33,7 @@
 <button id="submit-answers-button">Submit Answers</button>
 
 <script>
-    // Define the URL for the API that returns the questions
     const questionsUrl = "/api/questions";
-
-    // Declare the variable to store the questions
     let questions = [];
 
     // Fetch the questions from the API and display them on the page
@@ -48,17 +45,12 @@
             const questionList = document.getElementById("question-list");
 
             questions.forEach((question, index) => {
-                // Create a container for the question and its options
                 const questionContainer = document.createElement("div");
-
-                // Create the question text element
                 const questionText = document.createElement("p");
                 questionText.innerText = `${index + 1}. ${question.question}`;
 
-                // Add the question text to the container
                 questionContainer.appendChild(questionText);
 
-                // Create a radio button for each option
                 question.options.forEach(option => {
                     const optionRadio = document.createElement("input");
                     optionRadio.type = "radio";
@@ -75,7 +67,6 @@
                     questionContainer.appendChild(optionContainer);
                 });
 
-                // Add the question container to the list of questions
                 questionList.appendChild(questionContainer);
             });
         });
@@ -83,9 +74,7 @@
     // Add a click event listener to the "Submit Answers" button
     const submitButton = document.getElementById("submit-answers-button");
     submitButton.addEventListener("click", () => {
-        // Get the selected answer for each question
         const answers = [];
-
         const questionContainers = document.querySelectorAll("#question-list > div");
         questionContainers.forEach((questionContainer, index) => {
             const selectedOption = questionContainer.querySelector("input:checked");
